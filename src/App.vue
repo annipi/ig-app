@@ -33,50 +33,41 @@
 </template>
 
 <script>
+import { app } from '../base';
+
 export default {
   name: 'App',
   data() {
     return {
-      file: null,
+      db: app.firestore(),
+      fileUrl: null,
       petName: null,
-      pets: [
-        {
-          "picture":"https://firebasestorage.googleapis.com/v0/b/trustartupcol.appspot.com/o/pets%2Fakita-americano.jpg?alt=media&token=438cc5ff-8e19-40ec-83e2-b3b7007c1f14",
-          "name":"Akita americano"
-        },
-        {
-          "name":"Husky siberiano",
-          "picture":"https://firebasestorage.googleapis.com/v0/b/trustartupcol.appspot.com/o/pets%2Fhusky-siberiano.jpg?alt=media&token=7f9cc2f0-48c8-4372-bb99-3c8dccc818a2"
-        },
-        {
-          "name":"Labrador",
-          "picture":"https://firebasestorage.googleapis.com/v0/b/trustartupcol.appspot.com/o/pets%2Flabrador-cachorro.jpg?alt=media&token=c9ad2d35-5739-4aa2-92de-50088273557e"
-        },
-        {
-          "picture":"https://firebasestorage.googleapis.com/v0/b/trustartupcol.appspot.com/o/pets%2Fpastor-aleman.jpg?alt=media&token=ed36d2dc-da15-455d-bef7-ddc8dc461a41",
-          "name":"Pastor aleman"
-        },
-        {
-          "picture":"https://firebasestorage.googleapis.com/v0/b/trustartupcol.appspot.com/o/pets%2Fpug.jpg?alt=media&token=8b73db0a-98e8-431c-ac49-82e4b40ff113",
-          "name":"Pug"
-        },
-        {
-          "picture":"https://firebasestorage.googleapis.com/v0/b/trustartupcol.appspot.com/o/pets%2Fsan-bernardo.jpg?alt=media&token=3ac3d4c1-2203-4d6f-a5ce-0ea415246f78",
-          "name":"San bernardo"
-        }
-      ]
+      pets: [],
     };
   },
   methods: {
-    onFileChange(file) {
+    async onFileChange(file) {
       if(!file) return;
-      this.file = file;
-      console.log(`File ${file.name} loaded!`);
+      const storageRef = app.storage().ref();
+      const fileRef = storageRef.child(file.name);
+      await fileRef.put(file);
+      this.fileUrl = await fileRef.getDownloadURL();
     },
-    uploadFile() {
-      console.log(`Ready to upload file ${this.file.name} with name ${this.petName}!`);
+    async uploadFile() {
+      await this.db.collection('pets').doc(this.petName).set({
+        name: this.petName,
+        picture: this.fileUrl,
+      });
+      await this.getPets();
       this.$refs.form.reset();
     },
+    async getPets() {
+      const petsCollection = await this.db.collection('pets').get();
+      this.pets = petsCollection.docs.map(doc => doc.data());
+    },
   },
-};
+  created() {
+    this.getPets();
+  }
+}
 </script>
