@@ -8,7 +8,8 @@
         <v-card flat width="70%" class="container">
           <v-form ref="form" class="container">
             <v-row class="mx-0">
-              <v-file-input label="Foto" @change="onFileChange" outlined dense clearable/>
+<!--              <v-file-input label="Foto" @change="onFileChange" outlined dense clearable/>-->
+              <v-text-field label="Picture Url" v-model="fileUrl" required dense outlined/>
               <v-text-field class="mx-3" label="Nombre" v-model="petName" required dense outlined/>
               <v-btn color="secondary" @click="uploadFile">Subir</v-btn>
             </v-row>
@@ -40,20 +41,20 @@ export default {
   data() {
     return {
       photoAlbum: new PhotoAlbum('0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab'),
-      file: null,
+      fileUrl: null,
       petName: null,
       pets: []
     };
   },
   methods: {
-    onFileChange(file) {
-      if(!file) return;
-      this.file = file;
-      console.log(`File ${file.name} loaded!`);
-    },
     uploadFile() {
-      console.log(`Ready to upload file ${this.file.name} with name ${this.petName}!`);
-      this.$refs.form.reset();
+      this.photoAlbum.addPhoto(this.petName, this.fileUrl)
+      .then((tx) => {
+        console.log(`Ready to save Photo with name ${this.petName}!`);
+        console.log(tx);
+        this.$refs.form.reset();
+        this.getPets();
+      });
     },
     getPets() {
       this.photoAlbum.getPhotos()

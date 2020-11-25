@@ -7,9 +7,10 @@ export default class PhotoAlbum {
     this.instance = new Vue.web3.eth.Contract(PhotoAlbumContract.abi, address);
   }
 
-  addPhoto(id, name, picture) {
+  addPhoto(name, picture) {
     return new Promise((resolve, reject) => {
-      this.send(this.instance.methods.addPhoto(id, name, picture))
+      this.getPhotoAlbumSize()
+        .then((size) => this.send(this.instance.methods.addPhoto(size, name, picture)))
         .then(resolve)
         .catch(reject);
     });
@@ -17,9 +18,8 @@ export default class PhotoAlbum {
 
   getPhotos() {
     return new Promise((resolve, reject) => {
-      this.instance.methods.photosLength()
-        .call()
-        .then((photosLength) => Array.from(Array(Number(photosLength)).keys()))
+      this.getPhotoAlbumSize()
+        .then((photosLength) => Array.from(Array(photosLength).keys()))
         .then((ids) => ids.map(id => this.getPhoto(id)))
         .then((photoPromises) => Promise.all(photoPromises))
         .then(resolve)
@@ -36,10 +36,24 @@ export default class PhotoAlbum {
     });
   }
 
+  getPhotoAlbumSize() {
+    return new Promise((resolve, reject) => {
+      this.instance.methods.photosLength()
+        .call()
+        .then((photosLength) => Number(photosLength))
+        .then(resolve)
+        .catch(reject);
+    });
+  }
+
   send(signature) {
     return new Promise((resolve, reject) => {
-      const [from] = Vue.web3.eth.getAccounts();
-      signature.estimateGas({from})
+      let from;
+      Vue.web3.eth.getAccounts()
+        .then(accounts => {
+          from = accounts[0];
+          return signature.estimateGas({from});
+        })
         .then(gas => signature.send({from, gas}))
         .then(resolve)
         .catch(reject);

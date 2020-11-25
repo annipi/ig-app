@@ -3,6 +3,7 @@ node_modules
 /dist
 secret.json
 base.js
+package-lock.json
 
 # local env files
 .env.local
