@@ -33,7 +33,7 @@
 </template>
 
 <script>
-import PhotoAlbum from "@/handlers/PhotoAlbum";
+import PhotoAlbum from '@/handlers/PhotoAlbum';
 
 export default {
   name: 'App',
@@ -48,7 +48,6 @@ export default {
   methods: {
     onFileChange(file) {
       if(!file) return;
-      this.file = file;
       console.log(`File ${file.name} loaded!`);
     },
     uploadFile() {
