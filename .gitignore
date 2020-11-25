@@ -2,6 +2,7 @@
 node_modules
 /dist
 base.js
+secret.json
 
 # local env files
 .env.local
