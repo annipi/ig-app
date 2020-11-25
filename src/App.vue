@@ -40,19 +40,28 @@ export default {
   data() {
     return {
       photoAlbum: new PhotoAlbum('0xe78A0F7E598Cc8b0Bb87894B0F60dD2a88d6a8Ab'),
-      file: null,
+      fileUrl: null,
       petName: null,
       pets: []
     };
   },
   methods: {
-    onFileChange(file) {
+    async onFileChange(file) {
       if(!file) return;
-      console.log(`File ${file.name} loaded!`);
+      await this.$ipfs.add(file)
+        .then((hash) => {
+          this.fileUrl = `http://ipfs.infura.io/ipfs/${hash.path}`;
+          console.log(`File uploaded to IPFS with hash ${hash.path}!`)
+        });
     },
     uploadFile() {
-      console.log(`Ready to upload file ${this.file.name} with name ${this.petName}!`);
-      this.$refs.form.reset();
+      this.photoAlbum.addPhoto(this.petName, this.fileUrl)
+        .then((tx) => {
+          console.log(`Ready to save Photo with name ${this.petName}!`);
+          console.log(tx);
+          this.$refs.form.reset();
+          this.getPets();
+        });
     },
     getPets() {
       this.photoAlbum.getPhotos()

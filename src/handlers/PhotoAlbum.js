@@ -7,7 +7,7 @@ export default class PhotoAlbum {
     this.instance = new Vue.web3.eth.Contract(PhotoAlbumContract.abi, address);
   }
 
-  addPhoto(id, name, picture) {
+  addPhoto(name, picture) {
     return new Promise((resolve, reject) => {
       this.getPhotoAlbumSize()
         .then((size) => this.send(this.instance.methods.addPhoto(size, name, picture)))
@@ -27,21 +27,21 @@ export default class PhotoAlbum {
     });
   }
 
+  getPhoto(id) {
+    return new Promise((resolve, reject) => {
+      this.instance.methods.getPhotoById(id)
+        .call()
+        .then(({ name, picture }) => resolve({ name, picture }))
+        .catch(reject);
+    });
+  }
+
   getPhotoAlbumSize() {
     return new Promise((resolve, reject) => {
       this.instance.methods.photosLength()
         .call()
         .then((photosLength) => Number(photosLength))
         .then(resolve)
-        .catch(reject);
-    });
-  }
-
-  getPhoto(id) {
-    return new Promise((resolve, reject) => {
-      this.instance.methods.getPhotoById(id)
-        .call()
-        .then(({ name, picture }) => resolve({ name, picture }))
         .catch(reject);
     });
   }
